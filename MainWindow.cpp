@@ -23,6 +23,7 @@ static QHash<QPair<int64_t, int64_t>, QPointF> parse_s_sps(QString file_name, bo
 MainWindow::MainWindow(QString rec_name, QString src_name, QString x_name, bool rev)
     : QMainWindow(nullptr)
     , scene(new QGraphicsScene(this))
+    , inline_par_x(true)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -75,53 +76,53 @@ MainWindow::MainWindow(QString rec_name, QString src_name, QString x_name, bool 
             int64_t s_line, s_number, r_line, r_number_from, r_number_to;
             bool ok = true;
             if (rev) {
-                s_line = str.mid(17, 10).toLongLong(&ok);
+                s_line = str.mid(17, 10).toDouble(&ok);
                 if (!ok) {
-                    QMessageBox::critical(nullptr, "Error", "Can not read source line number (18, 27) from X SPS file: " + str);
+                    QMessageBox::critical(nullptr, "Error", "Can not read source line number (18, 27) from X SPS file:<br>" + str.mid(17, 10));
                     exit(1);
                 }
-                s_number = str.mid(27, 10).toLongLong(&ok);
+                s_number = str.mid(27, 10).toDouble(&ok);
                 if (!ok) {
-                    QMessageBox::critical(nullptr, "Error", "Can not read source point number (28, 37) from X SPS file: " + str);
+                    QMessageBox::critical(nullptr, "Error", "Can not read source point number (28, 37) from X SPS file:<br>" + str.mid(27, 10));
                     exit(1);
                 }
-                r_line = str.mid(49, 10).toLongLong(&ok);
+                r_line = str.mid(49, 10).toDouble(&ok);
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read receiver line number (50, 59) from X SPS file: " + str);
                     exit(1);
                 }
-                r_number_from = str.mid(59, 10).toLongLong(&ok);
+                r_number_from = str.mid(59, 10).toDouble(&ok);
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read receiver point number (60, 69) from X SPS file: " + str);
                     exit(1);
                 }
-                r_number_to = str.mid(69, 10).toLongLong(&ok);
+                r_number_to = str.mid(69, 10).toDouble(&ok);
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read receiver point number (70, 79) from X SPS file: " + str);
                     exit(1);
                 }
             } else {
-                s_line = str.mid(13, 16).toLongLong(&ok);
+                s_line = str.mid(13, 16).toDouble(&ok);
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read source line number (14, 29) from X SPS file: " + str);
                     exit(1);
                 }
-                s_number = str.mid(29, 8).toLongLong(&ok);
+                s_number = str.mid(29, 8).toDouble(&ok);
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read source point number (30, 37) from X SPS file: " + str);
                     exit(1);
                 }
-                r_line = str.mid(47, 16).toLongLong(&ok);
+                r_line = str.mid(47, 16).toDouble(&ok);
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read receiver line number (48, 63) from X SPS file: " + str);
                     exit(1);
                 }
-                r_number_from = str.mid(63, 8).toLongLong(&ok);
+                r_number_from = str.mid(63, 8).toDouble(&ok);
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read receiver point number (64, 71) from X SPS file: " + str);
                     exit(1);
                 }
-                r_number_to = str.mid(71, 8).toLongLong(&ok);
+                r_number_to = str.mid(71, 8).toDouble(&ok);
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read receiver point number (72, 79) from X SPS file: " + str);
                     exit(1);
@@ -129,14 +130,14 @@ MainWindow::MainWindow(QString rec_name, QString src_name, QString x_name, bool 
             }
             QHash<QPair<int64_t, int64_t>, QPointF>::iterator sit = src.find(QPair<int64_t, int64_t>(s_line, s_number));
             if (sit == src.end()) {
-                QMessageBox::critical(nullptr, "Error", "There is source in X SPS file which missing in S SPS file: " + QString::number(s_line) + QString::number(s_number));
+                QMessageBox::critical(nullptr, "Error", "There is source in X SPS file which missing in S SPS file: " + QString::number(s_line) + " " + QString::number(s_number));
                 exit(1);
             }
             QPointF src = *sit;
             for (int64_t i = r_number_from; i <= r_number_to; ++i) {
                 QHash<QPair<int64_t, int64_t>, QPointF>::iterator rit = rec.find(QPair<int64_t, int64_t>(r_line, i));
                 if (rit == rec.end()) {
-                    QMessageBox::critical(nullptr, "Error", "There is receiver in X SPS file which missing in R SPS file: " + QString::number(r_line) + QString::number(i));
+                    QMessageBox::critical(nullptr, "Error", "There is receiver in X SPS file which missing in R SPS file: " + QString::number(r_line) + " " + QString::number(i));
                     exit(1);
                 }
                 QPointF rec = *rit;
@@ -241,6 +242,11 @@ void MainWindow::y_origin_changed(double value)
     redraw_grid();
 }
 
+void MainWindow::inline_par_x_changed(bool value)
+{
+    inline_par_x = value;
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -261,23 +267,23 @@ QHash<QPair<int64_t, int64_t>, QPointF> parse_r_sps(QString file_name, bool rev)
             int64_t line, number;
             bool ok = true;
             if (rev) {
-                line = str.mid(1, 10).toLongLong();
+                line = str.mid(1, 10).toDouble();
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read line number (2, 11) from R SPS file: " + str);
                     exit(1);
                 }
-                number = str.mid(11, 10).toLongLong();
+                number = str.mid(11, 10).toDouble();
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read point number (12, 21) from R SPS file: " + str);
                     exit(1);
                 }
             } else {
-                line = str.mid(1, 16).toLongLong();
+                line = str.mid(1, 16).toDouble();
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read line number (2, 17) from R SPS file: " + str);
                     exit(1);
                 }
-                number = str.mid(17, 8).toLongLong();
+                number = str.mid(17, 8).toDouble();
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read point number (18, 25) from R SPS file: " + str);
                     exit(1);
@@ -314,23 +320,23 @@ QHash<QPair<int64_t, int64_t>, QPointF> parse_s_sps(QString file_name, bool rev)
             int64_t line, number;
             bool ok = true;
             if (rev) {
-                line = str.mid(1, 10).toLongLong();
+                line = str.mid(1, 10).toDouble();
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read line number (2, 11) from S SPS file: " + str);
                     exit(1);
                 }
-                number = str.mid(11, 10).toLongLong();
+                number = str.mid(11, 10).toDouble();
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read point number (12, 21) from S SPS file: " + str);
                     exit(1);
                 }
             } else {
-                line = str.mid(1, 16).toLongLong();
+                line = str.mid(1, 16).toDouble();
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read line number (2, 17) from S SPS file: " + str);
                     exit(1);
                 }
-                number = str.mid(17, 8).toLongLong();
+                number = str.mid(17, 8).toDouble();
                 if (!ok) {
                     QMessageBox::critical(nullptr, "Error", "Can not read point number (18, 25) from S SPS file: " + str);
                     exit(1);
@@ -369,4 +375,5 @@ void MainWindow::save_grid()
     out << Qt::fixed << "y_cell_size=" << y_cell_size << '\n';
     out << "x_cells_number=" << x_cells_number << '\n';
     out << "y_cells_number=" << y_cells_number << '\n';
+    out << "inline_par_x=" << (inline_par_x ? "True" : "False");
 }

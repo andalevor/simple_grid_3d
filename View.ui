@@ -184,6 +184,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="inlineParX">
+         <property name="text">
+          <string>Inlines parallel X</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>

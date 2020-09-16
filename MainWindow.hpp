@@ -20,6 +20,7 @@ public:
     QGraphicsScene* scene;
     double min_x, min_y, max_x, max_y, x_cell_size, y_cell_size, azimuth, x_origin, y_origin;
     int x_cells_number, y_cells_number;
+    bool inline_par_x;
 
 public slots:
     void x_cell_size_changed(double);
@@ -29,6 +30,7 @@ public slots:
     void x_cells_number_changed(int);
     void y_cells_number_changed(int);
     void azimuth_changed(double);
+    void inline_par_x_changed(bool);
     void draw_grid();
     void redraw_grid();
     void show_grid(bool);
